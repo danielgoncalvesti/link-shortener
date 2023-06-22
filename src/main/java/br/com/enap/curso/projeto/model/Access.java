@@ -30,6 +30,9 @@ public class Access {
     @Column(name="platform")
     private String platform;
 
+    @Column(name="user_agent")
+    private String userAgentData;
+
     @CreatedDate
     @Column(name = "created_date")
     private Date createdTime;

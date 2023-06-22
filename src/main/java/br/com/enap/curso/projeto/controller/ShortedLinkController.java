@@ -31,30 +31,38 @@ public class ShortedLinkController {
         return ResponseEntity.ok().body(message);
     }
 
+    private Access builtAccess(Map<String,String> headers, ShortedLink sLink){
+        Map<String,String> headerResult=new HashMap<>();
+        headers.forEach((header, val) -> {
+            log.info(String.format("header: %s value: %s" ,header, val));
+            if (header.equals("sec-ch-ua")) {
+                String value = val.split(";")[0].replaceAll("\"", "");
+                headerResult.put("browser", value);
+            } else if (header.equals("sec-ch-ua-platform")) {
+                String value = val.split(";")[0].replaceAll("\"", "");
+                headerResult.put("os", value);
+            } else if (header.equals("accept-language")) {
+                String value = val.split(",")[0].replaceAll("\"", "");
+                headerResult.put("language", value);
+            } else if (header.equals("user-agent")) {
+                headerResult.put("user-agent", val);
+            }
+        });
+        return Access.builder()
+                .browser(headerResult.get("browser"))
+                .shortedLink(sLink)
+                .platform(headerResult.get("os"))
+                .language(headerResult.get("language"))
+                .userAgentData(headerResult.get("user-agent"))
+                .build();
+    }
+
     @GetMapping(value = "/{alias}", produces = MediaType.TEXT_HTML_VALUE)
     public RedirectView redirect(@PathVariable String alias, @RequestHeader Map<String, String> headers){
         ShortedLink sLink = shortedLinkService.getShortedLinkByAlias(alias);
-        Map<String,String> headerValues=new HashMap<>();
+
         if(sLink != null) {
-            headers.forEach((header, val) -> {
-                        if (header.equals("sec-ch-ua")) {
-                            String value = val.split(";")[0].replaceAll("\"", "");
-                            headerValues.put("browser", value);
-                        } else if (header.equals("sec-ch-ua-platform")) {
-                            String value = val.split(";")[0].replaceAll("\"", "");
-                            headerValues.put("os", value);
-                        } else if (header.equals("accept-language")) {
-                            String value = val.split(",")[0].replaceAll("\"", "");
-                            headerValues.put("language", value);
-                        }
-                    });
-            Access access= Access.builder().
-                    browser(headerValues.get("browser")).
-                    shortedLink(sLink).
-                    platform(headerValues.get("os")).
-                    language(headerValues.get("language"))
-                    .build();
-            accessService.saveAccess(access);
+            accessService.saveAccess(builtAccess(headers, sLink));
             RedirectView redirectView = new RedirectView();
             redirectView.setUrl(sLink.getLink());
             return redirectView;
