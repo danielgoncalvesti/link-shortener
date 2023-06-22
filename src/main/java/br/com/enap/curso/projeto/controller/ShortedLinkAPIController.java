@@ -2,8 +2,10 @@ package br.com.enap.curso.projeto.controller;
 
 import br.com.enap.curso.projeto.errorHandling.AliasAlreadyExistsException;
 import br.com.enap.curso.projeto.errorHandling.UrlNotCorrectException;
+import br.com.enap.curso.projeto.model.AccessStatistics;
 import br.com.enap.curso.projeto.model.ShortedLink;
 import br.com.enap.curso.projeto.repository.ShortedLinkRepository;
+import br.com.enap.curso.projeto.service.AccessService;
 import br.com.enap.curso.projeto.service.ShortedLinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,25 +26,28 @@ public class ShortedLinkAPIController {
 
     Logger logger = LoggerFactory.getLogger(ShortedLinkAPIController.class);
     @Autowired
-    private final ShortedLinkRepository repo;
+    private ShortedLinkRepository shortedLinkRepository;
+
+    @Autowired
+    private AccessService accessService;
 
     @Autowired
     private ShortedLinkService shortedLinkService;
 
     public ShortedLinkAPIController(ShortedLinkRepository repo) {
-        this.repo = repo;
+        this.shortedLinkRepository = repo;
     }
 
     @GetMapping("/links")
     public List<ShortedLink> getAllShortedLinks() {
-        return repo.findAll();
+        return shortedLinkRepository.findAll();
     }
 
     @PostMapping(value = "/links", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ShortedLink>> postLinks(@RequestBody List<ShortedLink> sLinks) throws Exception {
         validUrls(sLinks);
         shortedLinkService.saveAllShortedLinks(sLinks);
-        repo.saveAll(sLinks);
+        shortedLinkRepository.saveAll(sLinks);
         return new ResponseEntity<List<ShortedLink>>(sLinks, HttpStatus.OK);
     }
 
@@ -56,14 +61,19 @@ public class ShortedLinkAPIController {
     @DeleteMapping(value = "/links/alias/{alias}")
     public ResponseEntity deleteLink(@PathVariable String alias) {
         logger.info(String.format("delete link by alias: {%s}", alias));
-        repo.deleteByAlias(alias);
+        shortedLinkRepository.deleteByAlias(alias);
         return ResponseEntity.noContent().build();
     }
 
-    public void validUrls(List<ShortedLink> sLinks) throws Exception {
+    @GetMapping("/analytics/{alias}")
+    public AccessStatistics getAccessStatisticsByAlias(@PathVariable String alias){
+        return accessService.getAccessStatisticsByAlias(alias);
+    }
+
+    private void validUrls(List<ShortedLink> sLinks) throws Exception {
         for (ShortedLink s: sLinks) {
             try {
-                var sLinkExists = repo.findByAlias(s.getAlias());
+                var sLinkExists = shortedLinkRepository.findByAlias(s.getAlias());
                 if (sLinkExists != null) throw new AliasAlreadyExistsException(s.getAlias());
                 new URL(s.getLink());
             } catch (MalformedURLException e) {
@@ -71,4 +81,5 @@ public class ShortedLinkAPIController {
             }
         }
     }
+
 }

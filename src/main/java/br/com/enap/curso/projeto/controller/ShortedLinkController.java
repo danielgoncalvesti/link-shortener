@@ -45,12 +45,12 @@ public class ShortedLinkController {
         headers.forEach((header, val) -> {
             log.info(String.format("header: %s value: %s" ,header, val));
             if (header.equals("sec-ch-ua")) {
-                String element  = Arrays.stream(val.substring(1).split(","))
+                String value  = Arrays.stream(val.substring(1).split(","))
                         .map(str -> str.replaceAll("\\s+", "")
                                 .replaceAll("\"", "").split(";")[0])
                         .filter(x -> BROWSERS_LIST.containsKey(x)).limit(1).toList().get(0);
-                element = (element == null) ? "" : BROWSERS_LIST.get(element);
-                headerResult.put("browser", element);
+                value = BROWSERS_LIST.get(value);
+                headerResult.put("browser", value);
             } else if (header.equals("sec-ch-ua-platform")) {
                 String value = val.split(";")[0].replaceAll("\"", "");
                 headerResult.put("os", value);
@@ -58,15 +58,28 @@ public class ShortedLinkController {
                 String value = val.split(",")[0].replaceAll("\"", "");
                 headerResult.put("language", value);
             } else if (header.equals("user-agent")) {
-                headerResult.put("user-agent", val);
+                String value = val;
+                headerResult.put("user-agent", value);
             }
         });
+        if (headerResult.get("browser") == null){
+            // verifica se tem o atributo browser no user-agent
+            String userAgent = headerResult.getOrDefault("user-agent", "");
+            String findBrowser = null;
+            for (Map.Entry<String, String> entry : BROWSERS_LIST.entrySet()){
+                if (userAgent.split(entry.getKey()).length > 0 && findBrowser == null) {
+                    findBrowser = entry.getKey();
+                    headerResult.put("browser", entry.getValue());
+                    break;
+                }
+            }
+        }
         return Access.builder()
-                .browser(headerResult.get("browser"))
+                .browser(headerResult.getOrDefault("browser", "other"))
                 .shortedLink(sLink)
-                .platform(headerResult.get("os"))
-                .language(headerResult.get("language"))
-                .userAgentData(headerResult.get("user-agent"))
+                .platform(headerResult.getOrDefault("os", "other"))
+                .language(headerResult.getOrDefault("language", "other"))
+                .userAgentData(headerResult.getOrDefault("user-agent", "other"))
                 .build();
     }
 
