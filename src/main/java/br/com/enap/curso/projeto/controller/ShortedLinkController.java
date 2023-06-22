@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,14 @@ public class ShortedLinkController {
 
     @Autowired
     private AccessService accessService;
+
+    // TODO: adicionar todos os browsers existentes
+    private Map<String, String> BROWSERS_LIST = new HashMap<String, String>(){{
+        put("Chromium", "Chrome");
+        put("GoogleChrome", "Chrome");
+        put("Firefox", "Firefox");
+        put("Mozilla", "Firefox");
+    }};
 
 
     @GetMapping(value = "/notfound/{alias}", produces = MediaType.TEXT_HTML_VALUE)
@@ -36,8 +45,12 @@ public class ShortedLinkController {
         headers.forEach((header, val) -> {
             log.info(String.format("header: %s value: %s" ,header, val));
             if (header.equals("sec-ch-ua")) {
-                String value = val.split(";")[0].replaceAll("\"", "");
-                headerResult.put("browser", value);
+                String element  = Arrays.stream(val.substring(1).split(","))
+                        .map(str -> str.replaceAll("\\s+", "")
+                                .replaceAll("\"", "").split(";")[0])
+                        .filter(x -> BROWSERS_LIST.containsKey(x)).limit(1).toList().get(0);
+                element = (element == null) ? "" : BROWSERS_LIST.get(element);
+                headerResult.put("browser", element);
             } else if (header.equals("sec-ch-ua-platform")) {
                 String value = val.split(";")[0].replaceAll("\"", "");
                 headerResult.put("os", value);
