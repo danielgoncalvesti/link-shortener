@@ -7,6 +7,8 @@ import br.com.enap.curso.projeto.model.ShortedLink;
 import br.com.enap.curso.projeto.repository.ShortedLinkRepository;
 import br.com.enap.curso.projeto.service.AccessService;
 import br.com.enap.curso.projeto.service.ShortedLinkService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +46,36 @@ public class ShortedLinkAPIController {
     }
 
     @PostMapping(value = "/links", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ShortedLink>> postLinks(@RequestBody List<ShortedLink> sLinks) throws Exception {
+    public ResponseEntity<List<ShortedLink>> postLinks(@RequestBody Object payload) throws Exception {
+        /*
+         * Neste método, devemos verificar se o objeto passado é ou não uma
+         * lista. Para isso, não podemos receber diretamente um payload de tipo
+         * List<ShortedLink>, pois será gerada uma exceção no momento da
+         * passagem do parâmetro, que devolverá uma mensagem de erro pouco
+         * útil através do tratamento de erros global.
+         *
+         * Então recebemos um objeto Object para verificar se é ou não uma
+         * lista e, caso não seja, retornamos uma mensagem de erro útil para o
+         * consumidor da API.
+         */
+        if (!(payload instanceof List))
+            throw new Exception("Error: payload (JSON) should be a list of objects.");
+
+        /*
+         * Uma vez identificado o objeto como uma lista, não é possível fazer
+         * um cast simples, sendo necessário utilizar o Jackson para fazer a
+         * conversão do Object para List<ShortedLink>, pois a conversão
+         * interna é feita para um objeto do tipo LinkedHashMap, sendo
+         * necessário um processamento explícito para ser convertida para um
+         * objeto do tipo desejado.
+         *
+         * Mais informações em:
+         * https://www.baeldung.com/jackson-linkedhashmap-cannot-be-cast
+         */
+        ObjectMapper mapper = new ObjectMapper();
+        List<ShortedLink> sLinks = mapper.convertValue(payload, new TypeReference<List<ShortedLink>>() {});
+
+        /* Finalmente podemos salvar os links recebidos */
         validUrls(sLinks);
         shortedLinkService.saveAllShortedLinks(sLinks);
         shortedLinkRepository.saveAll(sLinks);
