@@ -60,7 +60,7 @@ public class ShortedLinkAPIController {
         return ResponseEntity.noContent().build();
     }
 
-    private void validUrls(List<ShortedLink> sLinks) throws Exception {
+    public void validUrls(List<ShortedLink> sLinks) throws Exception {
         for (ShortedLink s: sLinks) {
             try {
                 var sLinkExists = repo.findByAlias(s.getAlias());
