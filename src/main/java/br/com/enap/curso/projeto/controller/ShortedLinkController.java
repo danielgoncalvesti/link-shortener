@@ -1,6 +1,8 @@
 package br.com.enap.curso.projeto.controller;
 
+import br.com.enap.curso.projeto.model.Access;
 import br.com.enap.curso.projeto.model.ShortedLink;
+import br.com.enap.curso.projeto.repository.AccessRepository;
 import br.com.enap.curso.projeto.repository.ShortedLinkRepository;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ import java.util.Map;
 public class ShortedLinkController {
     @Autowired
     private final ShortedLinkRepository repo;
+
+    @Autowired
+    private AccessRepository accessRepository;
 
     public ShortedLinkController(ShortedLinkRepository repo) {
         this.repo = repo;
@@ -38,18 +43,21 @@ public class ShortedLinkController {
                         if (header.equals("sec-ch-ua")) {
                             String value = val.split(";")[0].replaceAll("\"", "");
                             headerValues.put("browser", value);
-                            log.info("browser" + ":" + value);
                         } else if (header.equals("sec-ch-ua-platform")) {
                             String value = val.split(";")[0].replaceAll("\"", "");
                             headerValues.put("os", value);
-                            log.info("os" + ":" + value);
                         } else if (header.equals("accept-language")) {
                             String value = val.split(",")[0].replaceAll("\"", "");
                             headerValues.put("language", value);
-                            log.info("lang" + ":" + value);
                         }
                     });
-            //to do: statistics
+            Access access= Access.builder().
+                    browser(headerValues.get("browser")).
+                    shortedLink(sLink).
+                    platform(headerValues.get("os")).
+                    language(headerValues.get("language"))
+                    .build();
+            accessRepository.save(access);
             RedirectView redirectView = new RedirectView();
             redirectView.setUrl(sLink.getLink());
             return redirectView;
