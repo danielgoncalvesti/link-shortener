@@ -7,8 +7,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class TotalByLanguage {
+public class TotalByPlatform {
 
-    private String language;
+    private String platform;
     private int totalHits;
 }

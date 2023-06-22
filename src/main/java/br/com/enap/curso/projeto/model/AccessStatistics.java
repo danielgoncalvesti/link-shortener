@@ -11,7 +11,8 @@ import java.util.List;
 @ToString
 public class AccessStatistics {
     private Integer totalHits;
-    private List<TotalByBrowser> totalByBrowserList;
+    private List<TotalByBrowser> totalByBrowsers;
 
-    private List<TotalByLanguage> totalByLanguage;
+    private List<TotalByLanguage> totalByLanguages;
+    private List<TotalByPlatform> totalByPlatforms;
 }
