@@ -3,10 +3,10 @@ package br.com.enap.curso.projeto.controller;
 import br.com.enap.curso.projeto.model.Access;
 import br.com.enap.curso.projeto.model.ShortedLink;
 import br.com.enap.curso.projeto.repository.AccessRepository;
-import br.com.enap.curso.projeto.repository.ShortedLinkRepository;
+import br.com.enap.curso.projeto.service.AccessService;
+import br.com.enap.curso.projeto.service.ShortedLinkService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +19,11 @@ import java.util.Map;
 @RestController
 public class ShortedLinkController {
     @Autowired
-    private final ShortedLinkRepository repo;
+    private ShortedLinkService shortedLinkService;
 
     @Autowired
-    private AccessRepository accessRepository;
+    private AccessService accessService;
 
-    public ShortedLinkController(ShortedLinkRepository repo) {
-        this.repo = repo;
-    }
 
     @GetMapping(value = "/notfound/{alias}", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity notfound(@PathVariable String alias){
@@ -36,7 +33,7 @@ public class ShortedLinkController {
 
     @GetMapping(value = "/{alias}", produces = MediaType.TEXT_HTML_VALUE)
     public RedirectView redirect(@PathVariable String alias, @RequestHeader Map<String, String> headers){
-        ShortedLink sLink = repo.findByAlias(alias);
+        ShortedLink sLink = shortedLinkService.getShortedLinkByAlias(alias);
         Map<String,String> headerValues=new HashMap<>();
         if(sLink != null) {
             headers.forEach((header, val) -> {
@@ -57,7 +54,7 @@ public class ShortedLinkController {
                     platform(headerValues.get("os")).
                     language(headerValues.get("language"))
                     .build();
-            accessRepository.save(access);
+            accessService.saveAccess(access);
             RedirectView redirectView = new RedirectView();
             redirectView.setUrl(sLink.getLink());
             return redirectView;

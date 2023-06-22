@@ -36,4 +36,8 @@ public class ShortedLinkService {
     public void saveShortedLink(ShortedLink shortedLink) {
         repo.save(shortedLink);
     }
+
+    public ShortedLink getShortedLinkByAlias(String alias){
+        return repo.findByAlias(alias);
+    }
 }

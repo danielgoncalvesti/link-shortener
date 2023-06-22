@@ -35,6 +35,7 @@ public class ProjetoApplication {
 		userService.saveUser(user1);
 
 		return (args) -> {
+			shortedLinkService.saveShortedLink(new ShortedLink("https://nti.ufabc.edu.br", "nti-ufabc", false, user1));
 			shortedLinkService.saveShortedLink(new ShortedLink("https://google.com.br", "google-br", false, user1));
 			shortedLinkService.saveShortedLink(new ShortedLink("https://yahoo.com.br", "yahoo-br", user1));
 			shortedLinkService.saveShortedLink(
