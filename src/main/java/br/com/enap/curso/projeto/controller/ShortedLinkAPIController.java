@@ -101,7 +101,7 @@ public class ShortedLinkAPIController {
         return accessService.getAccessStatisticsByAlias(alias);
     }
 
-    private void validUrls(List<ShortedLink> sLinks) throws Exception {
+    public void validUrls(List<ShortedLink> sLinks) throws Exception {
         for (ShortedLink s: sLinks) {
             try {
                 var sLinkExists = shortedLinkRepository.findByAlias(s.getAlias());
