@@ -12,13 +12,13 @@ import java.util.UUID;
 public class ShortedLinkService {
 
     @Autowired
-    ShortedLinkRepository repo;
+    ShortedLinkRepository shortedLinkRepository;
 
     public void updateShortedLink(ShortedLink s, String alias) {
-        ShortedLink shortedLink = repo.findByAlias(alias);
+        ShortedLink shortedLink = shortedLinkRepository.findByAlias(alias);
 
         shortedLink.setLink(s.getLink());
-        repo.save(shortedLink);
+        shortedLinkRepository.save(shortedLink);
     }
 
     public void saveAllShortedLinks(List<ShortedLink> shortedLinks) {
@@ -30,14 +30,22 @@ public class ShortedLinkService {
                 s.setIsprivate(false);
             }
         }
-        repo.saveAll(shortedLinks);
+        shortedLinkRepository.saveAll(shortedLinks);
     }
 
     public void saveShortedLink(ShortedLink shortedLink) {
-        repo.save(shortedLink);
+        shortedLinkRepository.save(shortedLink);
     }
 
     public ShortedLink getShortedLinkByAlias(String alias){
-        return repo.findByAlias(alias);
+        return shortedLinkRepository.findByAlias(alias);
+    }
+
+    public List<ShortedLink> getAllShortedLinks(){
+        return shortedLinkRepository.findAll();
+    }
+
+    public void removeShortedLinkByAlias(String alias){
+        shortedLinkRepository.deleteByAlias(alias);
     }
 }

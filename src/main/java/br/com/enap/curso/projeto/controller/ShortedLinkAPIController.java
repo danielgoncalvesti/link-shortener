@@ -27,8 +27,6 @@ import java.util.List;
 public class ShortedLinkAPIController {
 
     Logger logger = LoggerFactory.getLogger(ShortedLinkAPIController.class);
-    @Autowired
-    private ShortedLinkRepository shortedLinkRepository;
 
     @Autowired
     private AccessService accessService;
@@ -36,13 +34,9 @@ public class ShortedLinkAPIController {
     @Autowired
     private ShortedLinkService shortedLinkService;
 
-    public ShortedLinkAPIController(ShortedLinkRepository repo) {
-        this.shortedLinkRepository = repo;
-    }
-
     @GetMapping("/links")
     public List<ShortedLink> getAllShortedLinks() {
-        return shortedLinkRepository.findAll();
+        return shortedLinkService.getAllShortedLinks();
     }
 
     @PostMapping(value = "/links", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -78,7 +72,6 @@ public class ShortedLinkAPIController {
         /* Finalmente podemos salvar os links recebidos */
         validUrls(sLinks);
         shortedLinkService.saveAllShortedLinks(sLinks);
-        shortedLinkRepository.saveAll(sLinks);
         return new ResponseEntity<List<ShortedLink>>(sLinks, HttpStatus.OK);
     }
 
@@ -92,7 +85,7 @@ public class ShortedLinkAPIController {
     @DeleteMapping(value = "/links/alias/{alias}")
     public ResponseEntity deleteLink(@PathVariable String alias) {
         logger.info(String.format("delete link by alias: {%s}", alias));
-        shortedLinkRepository.deleteByAlias(alias);
+        shortedLinkService.removeShortedLinkByAlias(alias);
         return ResponseEntity.noContent().build();
     }
 
@@ -104,7 +97,7 @@ public class ShortedLinkAPIController {
     public void validUrls(List<ShortedLink> sLinks) throws Exception {
         for (ShortedLink s: sLinks) {
             try {
-                var sLinkExists = shortedLinkRepository.findByAlias(s.getAlias());
+                var sLinkExists = shortedLinkService.getShortedLinkByAlias(s.getAlias());
                 if (sLinkExists != null) throw new AliasAlreadyExistsException(s.getAlias());
                 new URL(s.getLink());
             } catch (MalformedURLException e) {
