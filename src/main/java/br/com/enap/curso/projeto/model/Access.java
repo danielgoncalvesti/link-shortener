@@ -33,6 +33,9 @@ public class Access {
     @Column(name="user_agent")
     private String userAgentData;
 
+    @Column(name="ip_access")
+    private String ipAccess;
+
     @CreatedDate
     @Column(name = "created_date")
     private Date createdTime;

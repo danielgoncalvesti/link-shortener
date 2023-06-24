@@ -2,9 +2,9 @@ package br.com.enap.curso.projeto.controller;
 
 import br.com.enap.curso.projeto.model.Access;
 import br.com.enap.curso.projeto.model.ShortedLink;
-import br.com.enap.curso.projeto.repository.AccessRepository;
 import br.com.enap.curso.projeto.service.AccessService;
 import br.com.enap.curso.projeto.service.ShortedLinkService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -40,7 +40,7 @@ public class ShortedLinkController {
         return ResponseEntity.ok().body(message);
     }
 
-    private Access builtAccess(Map<String,String> headers, ShortedLink sLink){
+    private Access builtAccess(Map<String,String> headers, String ip, ShortedLink sLink){
         Map<String,String> headerResult=new HashMap<>();
         headers.forEach((header, val) -> {
             log.info(String.format("header: %s value: %s" ,header, val));
@@ -80,15 +80,16 @@ public class ShortedLinkController {
                 .platform(headerResult.getOrDefault("os", "other"))
                 .language(headerResult.getOrDefault("language", "other"))
                 .userAgentData(headerResult.getOrDefault("user-agent", "other"))
+                .ipAccess(ip)
                 .build();
     }
 
     @GetMapping(value = "/{alias}", produces = MediaType.TEXT_HTML_VALUE)
-    public RedirectView redirect(@PathVariable String alias, @RequestHeader Map<String, String> headers){
+    public RedirectView redirect(@PathVariable String alias, @RequestHeader Map<String, String> headers, HttpServletRequest request){
         ShortedLink sLink = shortedLinkService.getShortedLinkByAlias(alias);
 
         if(sLink != null) {
-            accessService.saveAccess(builtAccess(headers, sLink));
+            accessService.saveAccess(builtAccess(headers, request.getRemoteAddr(), sLink));
             RedirectView redirectView = new RedirectView();
             redirectView.setUrl(sLink.getLink());
             return redirectView;
