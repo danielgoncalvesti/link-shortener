@@ -16,7 +16,7 @@ import java.time.ZoneOffset;
 @RequestMapping("/token")
 public class TokenController {
 
-    private static final String SECRET = "123";
+    private static final String  SECRET= "123";
     @Autowired
     private UserService userService;
 
