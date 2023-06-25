@@ -1,5 +1,6 @@
 package br.com.enap.curso.projeto.config;
 
+import br.com.enap.curso.projeto.errorHandling.ValidationError;
 import br.com.enap.curso.projeto.model.DTO.TokenDecoder;
 import br.com.enap.curso.projeto.service.UserService;
 import com.auth0.jwt.JWT;
@@ -11,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -34,16 +36,20 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String getUserIdByToken(String token){
-        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SECRET))
-                .build()
-                .verify(token);
+        try {
+            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SECRET))
+                    .build()
+                    .verify(token);
 
-        String payload = decodedJWT.getPayload();
+            String payload = decodedJWT.getPayload();
 
-        byte[] payloadBytes = Base64.getDecoder().decode(payload.getBytes(StandardCharsets.UTF_8));
+            byte[] payloadBytes = Base64.getDecoder().decode(payload.getBytes(StandardCharsets.UTF_8));
 
-        TokenDecoder tokenDecoder = new Gson().fromJson(new String(payloadBytes), TokenDecoder.class);
-        return tokenDecoder.getUserId();
+            TokenDecoder tokenDecoder = new Gson().fromJson(new String(payloadBytes), TokenDecoder.class);
+            return tokenDecoder.getUserId();
+        } catch (Exception e ){
+            throw new ValidationError("Invalid token", HttpStatus.UNAUTHORIZED.value());
+        }
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
