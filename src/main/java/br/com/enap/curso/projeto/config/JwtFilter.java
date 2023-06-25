@@ -52,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
             byte[] payloadBytes = Base64.getDecoder().decode(payload.getBytes(StandardCharsets.UTF_8));
 
             TokenDecoder tokenDecoder = new Gson().fromJson(new String(payloadBytes), TokenDecoder.class);
-            request.setAttribute("userId", tokenDecoder.getUserId());
+            request.setAttribute("X-User-Id", tokenDecoder.getUserId());
             filterChain.doFilter(request, response);
         } catch (Exception e ){
             ResponseMessage responseMessage = new ResponseMessage("Invalid token");
