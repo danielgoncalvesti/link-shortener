@@ -1,5 +1,6 @@
 package br.com.enap.curso.projeto.config;
 
+import br.com.enap.curso.projeto.ResponseMessage;
 import br.com.enap.curso.projeto.errorHandling.ValidationError;
 import br.com.enap.curso.projeto.model.DTO.TokenDecoder;
 import br.com.enap.curso.projeto.service.UserService;
@@ -35,7 +36,12 @@ public class JwtFilter extends OncePerRequestFilter {
         return "/token".equals(path);
     }
 
-    private String getUserIdByToken(String token){
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        final String token = request.getHeader("Authorization");
+        // check the token here and bind the userId on request
+
         try {
             DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SECRET))
                     .build()
@@ -46,22 +52,14 @@ public class JwtFilter extends OncePerRequestFilter {
             byte[] payloadBytes = Base64.getDecoder().decode(payload.getBytes(StandardCharsets.UTF_8));
 
             TokenDecoder tokenDecoder = new Gson().fromJson(new String(payloadBytes), TokenDecoder.class);
-            return tokenDecoder.getUserId();
+            request.setAttribute("userId", tokenDecoder.getUserId());
+            filterChain.doFilter(request, response);
         } catch (Exception e ){
-            throw new ValidationError("Invalid token", HttpStatus.UNAUTHORIZED.value());
+            ResponseMessage responseMessage = new ResponseMessage("Invalid token");
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write(new Gson().toJson(responseMessage));
+            response.setHeader("Content-Type", "application/json");
         }
-    }
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        final String authorizationHeader = request.getHeader("Authorization");
-        // check the token here and bind the userId on request
-
-        String userId =  getUserIdByToken(authorizationHeader);
-
-        // set userId attribute on the request
-        request.setAttribute("userId", userId);
-        filterChain.doFilter(request, response);
     }
 
 }
