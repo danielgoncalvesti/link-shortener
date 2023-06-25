@@ -21,6 +21,15 @@ public class TratamentoErroGlobal {
         );
     }
 
+    @ExceptionHandler(ValidationError.class)
+    protected ResponseEntity<ReturnMessage> validationErrorHandling(Exception ex, WebRequest request) {
+        logger.error(String.format("ValidationError message: %s", ex.getMessage()));
+        ValidationError validationError = (ValidationError) ex;
+        return ResponseEntity.status(validationError.getStatusCode()).body(
+                new ReturnMessage(ex.getMessage())
+        );
+    }
+
     @ExceptionHandler(UrlNotCorrectException.class)
     protected ResponseEntity<ReturnMessage> urlNotCorrectHandling(Exception ex, WebRequest request) {
         logger.error(String.format("UrlNotCorrectException message: %s", ex.getMessage()));
