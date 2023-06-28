@@ -22,6 +22,7 @@ import java.util.Base64;
 @Component
 public class AuthenticationContextAspect {
 
+    // get the value from app conf(variables)
     private static final String SECRET = "123";
 
     @Before(value = "@annotation(authenticationContext)", argNames = "authenticationContext")
