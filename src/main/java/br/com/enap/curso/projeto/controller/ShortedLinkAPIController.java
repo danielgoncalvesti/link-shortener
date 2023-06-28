@@ -1,14 +1,17 @@
 package br.com.enap.curso.projeto.controller;
 
+import br.com.enap.curso.projeto.auth.AuthenticationContext;
 import br.com.enap.curso.projeto.errorHandling.AliasAlreadyExistsException;
 import br.com.enap.curso.projeto.errorHandling.UrlNotCorrectException;
 import br.com.enap.curso.projeto.model.AccessStatistics;
+import br.com.enap.curso.projeto.model.DTO.AuthenticatedUser;
 import br.com.enap.curso.projeto.model.ShortedLink;
 import br.com.enap.curso.projeto.repository.ShortedLinkRepository;
 import br.com.enap.curso.projeto.service.AccessService;
 import br.com.enap.curso.projeto.service.ShortedLinkService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +38,10 @@ public class ShortedLinkAPIController {
     private ShortedLinkService shortedLinkService;
 
     @GetMapping("/links")
-    public List<ShortedLink> getAllShortedLinks() {
-        return shortedLinkService.getAllShortedLinks();
+    @AuthenticationContext(userId = "#request.getUserId")
+    public List<ShortedLink> getAllShortedLinks(HttpServletRequest request) {
+        var authenticatedUser = (AuthenticatedUser) request.getAttribute("authenticatedUser");
+        return shortedLinkService.getShortedLinksByUserId(authenticatedUser.getUserId());
     }
 
     @PostMapping(value = "/links", produces = MediaType.APPLICATION_JSON_VALUE)

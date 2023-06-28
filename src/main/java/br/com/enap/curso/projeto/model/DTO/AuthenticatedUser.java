@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenDecoder {
-    private String userId;
+public class AuthenticatedUser {
+    private Long userId;
     private String username;
 }

@@ -45,6 +45,14 @@ public class ShortedLinkService {
         return shortedLinkRepository.findAll();
     }
 
+    public List<ShortedLink> getShortedLinksByUserId(Long userId){
+        return shortedLinkRepository.getAllShortedLinkByUserId(userId);
+    }
+
+    public List<ShortedLink> getShortedLinksByUser(Long userId){
+        return shortedLinkRepository.findAll();
+    }
+
     public void removeShortedLinkByAlias(String alias){
         shortedLinkRepository.deleteByAlias(alias);
     }

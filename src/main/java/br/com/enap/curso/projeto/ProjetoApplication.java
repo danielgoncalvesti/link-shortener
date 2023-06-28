@@ -31,13 +31,15 @@ public class ProjetoApplication {
 	public CommandLineRunner demo(ShortedLinkRepository repo) {
 		User admin= new User("admin", "321", "Admin", "", "123456");
 		userService.saveUser(admin);
-		User user1 = new User("daniel", "123", "Daniel", "");
+		User user1 = new User("user1", "123", "User 01", "");
 		userService.saveUser(user1);
+		User user2 = new User("user2", "123", "User 02", "");
+		userService.saveUser(user2);
 
 		return (args) -> {
 			shortedLinkService.saveShortedLink(new ShortedLink("https://nti.ufabc.edu.br", "nti-ufabc", false, user1));
-			shortedLinkService.saveShortedLink(new ShortedLink("https://google.com.br", "google-br", false, user1));
-			shortedLinkService.saveShortedLink(new ShortedLink("https://yahoo.com.br", "yahoo-br", user1));
+			shortedLinkService.saveShortedLink(new ShortedLink("https://google.com.br", "google-br", false, user2));
+			shortedLinkService.saveShortedLink(new ShortedLink("https://yahoo.com.br", "yahoo-br", user2));
 			shortedLinkService.saveShortedLink(
 					new ShortedLink("https://images.unsplash.com/photo-1686902738032-a5d908c2b05b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2127&q=80", "carro-pic", user1));
 		};
